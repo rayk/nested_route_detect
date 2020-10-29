@@ -24,7 +24,7 @@ class _NestedRouterDemoState extends State<NestedRouterDemo> {
   @override
   Widget build(BuildContext context) {
     print(
-        '${DateTime.now()}\tRootWidget \t\t\t\t Widget Build on MaterialApp.Router');
+        '${DateTime.now()}\tWidget \t\t\t MaterialApp.Router \t\t Widget Build');
     return MaterialApp.router(
       title: 'Books App',
       routerDelegate: _routerDelegate,
@@ -83,7 +83,7 @@ class BooksAppState extends ChangeNotifier {
 
 class BookRouteInformationParser extends RouteInformationParser<BookRoutePath> {
   BookRouteInformationParser() {
-    print('${DateTime.now()}\tBookRouteInformationParser \t\t Created');
+    print('${DateTime.now()}\tParser \t\t\t BookInformation \t\t Created');
   }
 
   @override
@@ -92,9 +92,11 @@ class BookRouteInformationParser extends RouteInformationParser<BookRoutePath> {
     final uri = Uri.parse(routeInformation.location);
 
     print(
-        '${DateTime.now()}\tBookRouteInformationParser \t\t Request parse route Information: ${routeInformation.location}');
+        '${DateTime.now()}\tParser \t\t\t BookInformation \t\t parse:${routeInformation.location}');
 
     if (uri.pathSegments.isNotEmpty && uri.pathSegments.first == 'settings') {
+      print(
+          '${DateTime.now()}\tParser \t\t\t BookInformation \t\t returning parsed: BookSettingsPath');
       return BooksSettingsPath();
     } else {
       if (uri.pathSegments.length >= 2) {
@@ -102,6 +104,8 @@ class BookRouteInformationParser extends RouteInformationParser<BookRoutePath> {
           return BooksDetailsPath(int.tryParse(uri.pathSegments[1]));
         }
       }
+      print(
+          '${DateTime.now()}\tParser \t\t\t BookInformation \t\t returning parsed: BookListPath');
       return BooksListPath();
     }
   }
@@ -109,7 +113,7 @@ class BookRouteInformationParser extends RouteInformationParser<BookRoutePath> {
   @override
   RouteInformation restoreRouteInformation(BookRoutePath configuration) {
     print(
-        '${DateTime.now()}\tBookRouteInformationParser \t\t Request restore route information: ${configuration.toString()}');
+        '${DateTime.now()}\tParser \t\t\t BookInformation \t\t restore route: ${configuration.toString()}');
     if (configuration is BooksListPath) {
       return RouteInformation(location: '/home');
     }
@@ -130,13 +134,14 @@ class BookRouterDelegate extends RouterDelegate<BookRoutePath>
   BooksAppState appState = BooksAppState();
 
   BookRouterDelegate() : navigatorKey = GlobalKey<NavigatorState>() {
-    print('${DateTime.now()}\tBookRouterDelegate \t\t\t Created');
+    print(
+        '${DateTime.now()}\tRouter \t\t\t BookRouterDelegate \t\tCreated with AppState - IDX: ${appState.selectedIndex} - BK: ${appState.selectedBook}');
     appState.addListener(notifyListeners);
   }
 
   BookRoutePath get currentConfiguration {
     print(
-        '${DateTime.now()}\tBootRouterDelegate \t\t Request Current Configuration');
+        '${DateTime.now()}\tRouter \t\t\t BootRouterDelegate \t\t Request Current Configuration - IDX:${appState.selectedIndex}');
     if (appState.selectedIndex == 1) {
       return BooksSettingsPath();
     } else {
@@ -150,7 +155,8 @@ class BookRouterDelegate extends RouterDelegate<BookRoutePath>
 
   @override
   Widget build(BuildContext context) {
-    print('${DateTime.now()}\tBookRouterDelegate \t\t Widget Build');
+    print(
+        '${DateTime.now()}\tRouter \t\t\t BookRouterDelegate \t\t Widget Build -> passing AppState');
     return Navigator(
       key: navigatorKey,
       pages: [
@@ -167,7 +173,7 @@ class BookRouterDelegate extends RouterDelegate<BookRoutePath>
           appState.selectedBook = null;
         }
         print(
-            '${DateTime.now()}\tBookRouterDelegate Page Popped NotifyListeners');
+            '${DateTime.now()}\tRouter \t\t\t BookRouterDelegate \t\t Page Popped NotifyListeners $route');
         notifyListeners();
         return true;
       },
@@ -177,7 +183,7 @@ class BookRouterDelegate extends RouterDelegate<BookRoutePath>
   @override
   Future<void> setNewRoutePath(BookRoutePath path) async {
     print(
-        '${DateTime.now()}\tBookRouterDelegate \t\t Request setNewRoutePath to ${path.toString()}');
+        '${DateTime.now()}\tRouter \t\t\t BookRouterDelegate \t\t Request setNewRoutePath to ${path.toString()}');
     if (path is BooksListPath) {
       appState.selectedIndex = 0;
       appState.selectedBook = null;
@@ -209,7 +215,7 @@ class AppShell extends StatefulWidget {
   AppShell({
     @required this.appState,
   }) {
-    print('${DateTime.now()}\tAppShellStatefulWidget \t Created');
+    print('${DateTime.now()}\tWidget \t\t\t AppShell \t\t Created');
   }
 
   @override
@@ -221,19 +227,23 @@ class _AppShellState extends State<AppShell> {
   ChildBackButtonDispatcher _backButtonDispatcher;
 
   void initState() {
-    print('${DateTime.now()}\tAppShellStatefulWidget \t initState');
+    print('${DateTime.now()}\tWidget \t\t\t AppShell \t\t initState');
     super.initState();
     _routerDelegate = InnerRouterDelegate(widget.appState);
   }
 
   @override
   void didUpdateWidget(covariant AppShell oldWidget) {
+    print(
+        '${DateTime.now()}\tWidget \t\t\t AppShell \t\t didUpdateWidget -> Updates router state');
     super.didUpdateWidget(oldWidget);
     _routerDelegate.appState = widget.appState;
   }
 
   @override
   void didChangeDependencies() {
+    print(
+        '${DateTime.now()}\tWidget \t\t\t AppShell \t\t didChangeDeps -> Update back button dispatch');
     super.didChangeDependencies();
     // Defer back button dispatching to the child router
     _backButtonDispatcher = Router.of(context)
@@ -249,7 +259,8 @@ class _AppShellState extends State<AppShell> {
     // to pick which one should take priority;
     _backButtonDispatcher.takePriority();
 
-    print('${DateTime.now()}\tAppShellStatefulWidget \t\t Widget Build');
+    print(
+        '${DateTime.now()}\tWidget \t\t\t AppShell \t\t Widget Build -> Using inner router');
 
     return Scaffold(
       appBar: AppBar(),
@@ -283,17 +294,18 @@ class InnerRouterDelegate extends RouterDelegate<BookRoutePath>
     }
     _appState = value;
     print(
-        '${DateTime.now()}\tInnerRouterDelegate \t\t Set App State & NotifyListeners');
+        '${DateTime.now()}\tRouter \t\t\t InnerRouter \t\t Set App State & NotifyListeners');
     notifyListeners();
   }
 
   InnerRouterDelegate(this._appState) {
-    print('${DateTime.now()}\tInnerRouterDelegate \t\t Created');
+    print('${DateTime.now()}\tRouter \t\t\t InnerRouter \t\t Created');
   }
 
   @override
   Widget build(BuildContext context) {
-    print('${DateTime.now()}\tInnerRouterDelegate \t\t Widget Build');
+    print(
+        '${DateTime.now()}\tRouter \t\t\t InnerRouter \t\t Widget Build -> AppState idx: ${appState.selectedIndex}');
     return Navigator(
       key: navigatorKey,
       pages: [
@@ -319,7 +331,7 @@ class InnerRouterDelegate extends RouterDelegate<BookRoutePath>
       onPopPage: (route, result) {
         appState.selectedBook = null;
         print(
-            '${DateTime.now()}\tInnerRouterDelegate \t\t Page Popped NotifyListeners');
+            '${DateTime.now()}\tRouter \t\t\t InnerRouter \t\t Page Popped NotifyListeners');
         notifyListeners();
         return route.didPop(result);
       },
@@ -330,6 +342,8 @@ class InnerRouterDelegate extends RouterDelegate<BookRoutePath>
   Future<void> setNewRoutePath(BookRoutePath path) async {
     // This is not required for inner router delegate because it does not
     // parse route
+    print(
+        '${DateTime.now()}\tRouter \t\t\t InnerRouter \t\t Set Path here should not be called');
     assert(false);
   }
 
@@ -345,7 +359,8 @@ class FadeAnimationPage extends Page {
   FadeAnimationPage({Key key, this.child}) : super(key: key);
 
   Route createRoute(BuildContext context) {
-    print('${DateTime.now()}\tFadeAnimationPage \t\t Widget Build');
+    print(
+        '${DateTime.now()}\tPage \t\t\t FadeAnimation \t\t Widget Build -> $child');
     return PageRouteBuilder(
       settings: this,
       pageBuilder: (context, animation, animation2) {
@@ -371,7 +386,8 @@ class BooksListScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    print('${DateTime.now()}\tBookListScreen \t\t Widget Build');
+    print(
+        '${DateTime.now()}\tWidget \t\t\t BookListScreen \t\t Widget Build with passed in params');
     return Scaffold(
       body: ListView(
         children: [
@@ -396,7 +412,8 @@ class BookDetailsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    print('${DateTime.now()}\tBookDetailScreen \t\t Widget Build');
+    print(
+        '${DateTime.now()}\tWidget \t\t\t BookDetailScreen \t\t Widget Build -> $book');
     return Scaffold(
       body: Padding(
         padding: const EdgeInsets.all(8.0),
